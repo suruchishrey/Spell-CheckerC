@@ -11,8 +11,21 @@ typedef struct dict_node_type{
     struct letter_node_type* right;
 }dict_node;
 typedef enum{FALSE,TRUE} boolean;
-
+typedef struct word_type{
+    char data[40];//array of string
+    int freq;
+    struct word_type* next;
+}wordNode;
 boolean areEqual(letter_node* aptr,letter_node* bptr);
+
+wordNode* MakeWordNode(char* word)
+{
+    wordNode* wptr=(wordNode*)malloc(sizeof(wordNode));
+    strcpy(wptr->data,word);
+    wptr->freq=1;
+    return wptr;
+    
+}
 
 boolean areSamebutDifferentCase(letter_node* aptr,letter_node* bptr)
 {
@@ -100,45 +113,124 @@ dict_node* create_dict(char* word,dict_node** dictpptr){
     letter_node* wordptr;
     int flag=0;
     dict_node* dictptr=*dictpptr;
-    wordptr=wordToList(word);
-    //first check whether the word given has a different case present already
     dict_node *ptr,*prev=NULL;
-    ptr=dictptr;
-    while(ptr!=NULL && flag==0)
+    wordptr=wordToList(word);
+    if(dictptr==NULL) //Inserting the first node in the dict(DICT EMPTY)
     {
-        prev=ptr;
-        if(areSamebutDifferentCase(ptr->right,wordptr))
-        {
-            flag=1;
-        }
-        else{ //this else ensures that if any word matches i.e is different case then
-                //ptr would not go down and stay on the matched word only. 
-            ptr=ptr->down;
-        }
-        
+        ptr=MakeDictNode();
+        ptr->down=NULL;
+        ptr->right=wordptr;
+        *dictpptr=ptr;
     }
-    //ptr contains the value of the matched case
-    if(flag==1)
+    else//DICT NOT EMPTY
     {
-        if((wordptr->data - (ptr->right->data))==32)
+        //first check whether the word given has a different case present already
+        ptr=dictptr;
+        while(ptr!=NULL && flag==0)
         {
-            //word should be inserted after ptr
-            InsertAfter(ptr,wordptr);
-        }
-        else{
-            //word should be inserted before ptr
-            if(prev==NULL)
+            prev=ptr;
+            if(areSamebutDifferentCase(ptr->right,wordptr))
             {
-                dict_node* dptr = MakeDictNode();
-                dptr->down=dictptr;
-                *dictpptr = dptr;
+                flag=1;
             }
-            else{
-                InsertAfter(prev,wordptr);
+            else{ //this else ensures that if any word matches i.e is different case then
+                    //ptr would not go down and stay on the matched word only. 
+                ptr=ptr->down;
             }
             
         }
+        //ptr contains the value of the matched case
+        if(flag==1)
+        {
+            if((wordptr->data - (ptr->right->data))==32)
+            {
+                //word should be inserted after ptr
+                InsertAfter(ptr,wordptr);
+            }
+            else{
+                //word should be inserted before ptr
+                if(prev==NULL)
+                {
+                    dict_node* dptr = MakeDictNode();
+                    dptr->down=dictptr;
+                    *dictpptr = dptr;
+                }
+                else{
+                    InsertAfter(prev,wordptr);
+                }
+                
+            }
+        }
     }
-
     
+}
+boolean presentInDictionary(char* word,dict_node* dictptr){
+    letter_node* wordptr = wordToList(word);
+    boolean retval=FALSE;int flag=0;
+    dict_node* ptr=dictptr;
+    while(ptr!=NULL && flag==0)
+    {
+        if(areEqual(wordptr,ptr->right)){
+            flag=1;
+            retval=TRUE;
+        }
+        else{
+            ptr=ptr->down;
+        }
+    }
+    return retval;
+}
+void readFileAndRemovePunctuation(){
+    char ch, file_name[25];
+    FILE *fp,*result;
+   fp = fopen("doc.txt", "r"); // read mode
+   result = fopen("result.txt","w");
+   if (fp != NULL)
+   {
+        while((ch = fgetc(fp)) != EOF)
+        {
+            if(ch>=65 || ch==32||(ch>=48 && ch<=57))
+            //WE CAN USE THIS LOGIC TO GENERATE ANOTHER FILE WITHOUT THE PUNCTUATION MARKS.
+            {
+                fprintf(result,"%c", ch);
+            }
+            
+        }  
+        fclose(fp);
+        fclose(result);
+   }
+}
+
+boolean IsMisspelled(char* word,dict_node* dictptr){
+    boolean retval = TRUE;
+    if(presentInDictionary){
+        retval = FALSE;
+    }
+    return retval;
+}
+
+wordNode* insert_mis(char* word,wordNode* endptr){
+    //INSERTING AT START
+    //RETURNS THE ENDPOINTER ITSELF
+    wordNode* retval=endptr;wordNode* lptr;
+    wordNode* wptr=(wordNode*)malloc(sizeof(wordNode));
+    wptr = MakeWordNode(word);
+    if(endptr==NULL)
+    {
+        wptr->next=wptr;
+        retval = wptr;
+    }
+    else{
+        lptr = endptr->next;
+        wptr->next = lptr;
+        endptr->next=wptr;
+    }
+    return retval;
+
+}
+
+int main()
+{
+    readFileAndRemovePunctuation();
+    return 0;
 }
