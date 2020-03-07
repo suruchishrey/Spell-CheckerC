@@ -2,184 +2,464 @@
 #include<stdlib.h>
 #include<math.h>
 #include<string.h>
-typedef struct letter_node_type{
-    char data;
-    struct letter_node_type* right;
-}letter_node;
-typedef struct dict_node_type{
-    struct dict_node_type* down;
-    struct letter_node_type* right;
-}dict_node;
-typedef enum{FALSE,TRUE} boolean;
+#include<ctype.h>
+
 typedef struct word_type{
-    char data[40];//array of string
+    char data[40];          //character string
     int freq;
     struct word_type* next;
 }wordNode;
-boolean areEqual(letter_node* aptr,letter_node* bptr);
+
+typedef struct dict_node_type{
+    struct dict_node_type* down;
+    wordNode* right;
+    char letter;
+}dict_node;
+
+typedef struct dict_tag{
+    dict_node*head;
+}Dictionary;
+
+typedef enum{FALSE,TRUE} boolean;
+
+typedef struct MRU_tag{
+    wordNode*top;
+}MRU;
+typedef struct MIS_tag{
+    wordNode*endptr;
+}MIS_List;
 
 wordNode* MakeWordNode(char* word)
 {
     wordNode* wptr=(wordNode*)malloc(sizeof(wordNode));
-    strcpy(wptr->data,word);
-    wptr->freq=1;
+    if(wptr!=NULL)
+    {
+        strcpy(wptr->data,word);
+        wptr->freq=0;
+        wptr->next=NULL;
+    }
+    
     return wptr;
     
 }
 
-boolean areSamebutDifferentCase(letter_node* aptr,letter_node* bptr)
+//Creation of Dictionary part and its associated functions
+void MakeDictNodes(Dictionary*dict_ptr)
 {
-    letter_node* ptr1,*ptr2;
-    int flag=0;
-    boolean retval;
-    ptr1=aptr;ptr2=bptr;
-    if(abs(ptr1->data-ptr2->data) ==32)
-    {
-        if(areEqual(ptr1->right,ptr2->right)==TRUE)
-        {
-            retval=TRUE;
-        }
-        else{
-            retval=FALSE;
-        }
-    }
-    else{
-        retval=FALSE;
-    }
-    return retval;
-}
-boolean areEqual(letter_node* aptr,letter_node* bptr)
-{
-    int flag=0;
-    boolean retval;
-    letter_node* ptr1,*ptr2;
-    ptr1=aptr;ptr2=bptr;
-    while(ptr1 && ptr2)
-    {
-        if(ptr1->data!=ptr2->data)
-        {
-            flag=1;
-        }
-    }
-    if(ptr1==NULL && ptr2==NULL && flag==0)
-    {
-        retval=TRUE;
-    }
-    else{
-        retval=FALSE;
-    }
-    return retval;
-
-}
-letter_node* MakeNode(char letter)
-{
-    letter_node* lptr;
-    lptr = (letter_node*)malloc(sizeof(letter_node));
-    lptr->data = letter;
-    lptr->right=NULL;
-    return lptr;
-}
-dict_node* MakeDictNode()
-{
-    dict_node* lptr;
+    dict_node* lptr,*ptr;
     lptr = (dict_node*)malloc(sizeof(dict_node));
+   
+    dict_ptr->head=lptr;
+    int i=1;
+    char letter='a';
     lptr->down=NULL;
     lptr->right=NULL;
-    return lptr;
-}
-
-letter_node* wordToList(char* word){
-    int len = strlen(word);
-    letter_node* ptr,*lptr=NULL;
-    for(int i=len-1;i>=0;i--)
+    lptr->letter=letter;
+    while(i<=26)
     {
-        ptr=MakeNode(word[i]);
-        ptr->right =lptr;
-        lptr=ptr;
-    }
-    return lptr;
-
-}
-void InsertAfter(dict_node* ptr,letter_node* wordptr)
-{
-    dict_node *nptr;
-    nptr = (dict_node*)malloc(sizeof(dict_node));
-    nptr->down = ptr->down;
-    nptr->right = wordptr;
-    ptr->down = nptr;
-}
-
-dict_node* create_dict(char* word,dict_node** dictpptr){
-    letter_node* wordptr;
-    int flag=0;
-    dict_node* dictptr=*dictpptr;
-    dict_node *ptr,*prev=NULL;
-    wordptr=wordToList(word);
-    if(dictptr==NULL) //Inserting the first node in the dict(DICT EMPTY)
-    {
-        ptr=MakeDictNode();
+        
+        letter=letter+1;
+        ptr = (dict_node*)malloc(sizeof(dict_node));
+        
+        ptr->right=NULL;
+        ptr->letter=letter;
         ptr->down=NULL;
-        ptr->right=wordptr;
-        *dictpptr=ptr;
+        lptr->down=ptr;
+    
+        lptr=lptr->down;
+        
+        i++;
+        
     }
-    else//DICT NOT EMPTY
+    
+    lptr->down=NULL;
+    lptr->right=NULL;
+    
+}
+
+void createDictionary(Dictionary*dict_ptr)
+{
+    dict_ptr->head=NULL;
+    MakeDictNodes(dict_ptr);
+}
+
+void TraverseDictionary(Dictionary*dictptr)
+{
+    dict_node*ptr=dictptr->head;
+    int i=0;
+    wordNode*wptr;
+    while(ptr!=NULL)
     {
-        //first check whether the word given has a different case present already
-        ptr=dictptr;
-        while(ptr!=NULL && flag==0)
+        printf("\n");
+        printf(" %c -->",ptr->letter);
+        wptr=ptr->right;
+        while(wptr!=NULL)
         {
-            prev=ptr;
-            if(areSamebutDifferentCase(ptr->right,wordptr))
+            printf(" %s , ",wptr->data);
+            wptr=wptr->next;
+        }
+        ptr=ptr->down;
+        i++;
+    }    
+    printf("\ncount=%d",i);
+}
+
+int newstrcmp(char* word1,char* word2)
+{
+    int res=0;
+    int i,len1=0,len2=0,diff;
+    int flag=1;
+    len1=strlen(word1);
+    len2=strlen(word2);
+    if(len1==len2)
+    {
+        for(diff=0;word1[diff]!='\0';++diff)                    //to check if strings are of different case but equal
+        {
+            if(abs(word1[diff]-word2[diff])==32)
             {
-                flag=1;
+                flag=0;
             }
-            else{ //this else ensures that if any word matches i.e is different case then
-                    //ptr would not go down and stay on the matched word only. 
-                ptr=ptr->down;
+        }
+        if(!flag)                                               //and if they are then Abc>abc
+        {
+            diff=strcmp(word1,word2);
+        
+                res=-1*diff;
+            
+        }
+        else
+        {
+             res=strcmp(word1,word2);
+        }
+        
+    }
+    else 
+    {
+        diff=strcmp(word1,word2);
+        res=diff;
+    }
+    return res;
+}
+
+//Function for inserting word in dictionary's one node in increasing order
+void InsertinDictNode(dict_node*dict_ptr,wordNode*wordptr)
+{
+    dict_node*ptr=dict_ptr;
+    int len,res;
+    char word[40],word1[40];
+    int diff;
+    strcpy(word,wordptr->data);
+    if(ptr->right==NULL)
+    {
+        ptr->right=wordptr;
+    }
+    else
+    {
+        wordNode * dptr=ptr->right;
+        wordNode*prev=NULL;
+        strcpy(word1,dptr->data);
+        res=newstrcmp(word,word1);
+        if(res<0)
+        {
+            ptr->right=wordptr;
+            wordptr->next=dptr;
+        }
+        else
+        {
+            while(res>0 && dptr->next!=NULL)                               //keep on comparing each word with the word to be inserted 
+            {
+                prev=dptr;
+                dptr=dptr->next;
+                strcpy(word1,dptr->data);
+                res=newstrcmp(word,word1);
+
+            }
+            if(res<0)                                                      //if next word is greater than word to be inserted then insert it
+            {
+                prev->next=wordptr;
+                wordptr->next=dptr;
+            }
+            else if(dptr->next==NULL)
+            {
+                dptr->next=wordptr;
+            }
+        }
+        
+        
+    }
+    
+}
+
+dict_node* create_dict(char* word,Dictionary*dict_ptr){
+    wordNode* wordptr;
+    int flag=0;
+    dict_node* dictptr=dict_ptr->head;
+    dict_node *ptr;
+    wordptr=MakeWordNode(word);
+    
+        char ch=tolower(word[0]);
+        int chvalue=word[0];
+        //look for the letter node
+        ptr=dictptr;
+        while(ptr!=NULL)
+        {
+            if(ptr->letter==ch)
+            {
+                InsertinDictNode(ptr,wordptr);
+            }
+            else if(ch>=48 && ch<=57 && ptr->down==NULL)
+            {
+                InsertinDictNode(ptr,wordptr);
+            }
+            ptr=ptr->down;
+        }
+}
+
+boolean presentInDictionary(char* word,Dictionary* dictptr)
+{
+    wordNode* wordptr = MakeWordNode(word);
+    boolean retval=FALSE;
+    int flag=0,flag1=0;
+    dict_node*dptr,*ptr=dictptr->head;
+    int check;
+    char word1[40];
+    char ch=tolower(word[0]);
+    while(ptr!=NULL && flag==0)
+    {
+        if(ptr->letter==ch || ((ch>=48 && ch<=57) && ptr->down==NULL))
+        {
+            flag=1;
+            dptr=ptr;                           //word can be present in this node only
+            wordNode*wptr=dptr->right;
+            while(wptr!=NULL && flag1==0)
+            {
+                strcpy(word1,wptr->data);
+                check=newstrcmp(word,word1);
+                if(check==0)
+                {
+                    retval=TRUE;
+                    flag1=1;
+                }
+                else
+                {
+                    wptr=wptr->next;
+                }
             }
             
         }
-        //ptr contains the value of the matched case
-        if(flag==1)
+       
+        ptr=ptr->down;
+    }
+    
+    return retval;
+}
+//Dictionary part over
+
+//Creation of MRU and its associated functions
+void create_MRU(MRU*mruptr)
+{
+    mruptr->top=NULL;
+}
+
+int len_mru(MRU*mruptr)                             //function to calculate no of nodes currently present in MRU
+{
+    wordNode*wptr=mruptr->top;
+    int len=0;
+    while(wptr!=NULL)
+    {
+        len++;
+        wptr=wptr->next;
+    }
+    return len;
+}
+
+boolean is_present(MRU*mruptr,char*word)
+{
+    wordNode*wptr=MakeWordNode(word);
+    wordNode*ptr=mruptr->top;
+    boolean retval=FALSE;
+    int flag=0;
+    while(ptr!=NULL && !flag)
+    {
+        if(newstrcmp(ptr->data,word)==0)
         {
-            if((wordptr->data - (ptr->right->data))==32)
+            flag=1;
+            retval=TRUE;
+        }
+        else{
+            ptr=ptr->next;
+        }
+        
+    }
+    return retval;
+}
+
+void increment(MRU*mruptr,wordNode*wptr)
+{
+    wordNode*ptr = mruptr->top;
+    int flag=1;
+    while(ptr!=NULL && flag)
+    {
+        if(newstrcmp(wptr->data,ptr->data)==0)
+        {
+            ptr->freq++;
+            flag=0;
+        }
+        ptr=ptr->next;
+    }
+    
+}
+
+void insert_MRU(MRU*mruptr,char*word,Dictionary*dict_ptr)
+{
+    wordNode*wptr=MakeWordNode(word);
+
+    boolean res;
+    wordNode *prev,*ptr=mruptr->top;
+
+    res=presentInDictionary(word,dict_ptr);
+    
+   
+    if(res)
+    {
+        if(mruptr->top==NULL)
+        {
+            
+            mruptr->top=wptr;
+            wptr->freq=1;
+            wptr->next=NULL;
+        }
+        else
+        {
+            
+            if(is_present(mruptr,word))
             {
-                //word should be inserted after ptr
-                InsertAfter(ptr,wordptr);
-            }
-            else{
-                //word should be inserted before ptr
-                if(prev==NULL)
-                {
-                    dict_node* dptr = MakeDictNode();
-                    dptr->down=dictptr;
-                    *dictpptr = dptr;
-                }
-                else{
-                    InsertAfter(prev,wordptr);
-                }
                 
+                increment(mruptr,wptr);
             }
+            else
+            {
+                if(len_mru(mruptr)<=10)                         //if length of MRU is<10 and its not already present then insert the new node
+                {
+                    
+                    prev=NULL;
+                    wptr->freq=1;
+                    while(ptr->freq>wptr->freq && ptr!=NULL)
+                    {
+                        prev=ptr;
+                        ptr=ptr->next;
+                    }
+                    if(prev!=NULL)
+                    {
+                        prev->next=wptr;
+                    }
+                    else
+                    {
+                        mruptr->top=wptr;
+                    }
+                    wptr->next=ptr;
+                    if(len_mru(mruptr)>10)
+                    {
+                        wptr->next=NULL;
+                    }   
+                        
+                }
+            }
+            
+            
+        }
+    }
+    
+    
+}
+//display() is incomplete rn!!!
+void display(MRU*mruptr)
+{
+    wordNode*ptr=mruptr->top;
+    while(ptr!=NULL)
+    {
+        printf(" %s-->%d ,",ptr->data,ptr->freq);
+        ptr=ptr->next;
+    }
+
+}
+//MRU part done
+
+//Creation of Misspelled List and its associated functions
+void create_MIS_List(MIS_List*mlptr)                    //Creating an empty list
+{
+    mlptr->endptr=NULL;
+}
+
+boolean is_present_MISList(MIS_List*mlptr,char*word)
+{
+    boolean retval=FALSE;
+    int flag=1;
+    wordNode*ptr=mlptr->endptr->next;
+    if(strcmp(mlptr->endptr->data,word)==0)                  //check if the last node is the required one
+    {
+        retval=TRUE;
+    }
+    else                                                    
+    {
+        /* code */
+        while(ptr!=mlptr->endptr && flag)                //else Iterate over the CLL to find 
+        {
+            if(strcmp(ptr->data,word)==0)
+            {
+                retval=TRUE;
+                ptr->freq++;
+                flag=0;
+            }
+            else
+            {
+                ptr=ptr->next;
+            }
+            
+        }
+    } 
+    return retval;
+}
+
+void insert_mis(char* word,MIS_List*mlptr){
+
+    wordNode* ptr=mlptr->endptr;
+    wordNode*lptr,*wptr = MakeWordNode(word);
+    
+    if(mlptr->endptr==NULL)                                //INSERTING AT START and incrementing the frequency simultaneously
+    {
+        wptr->next=wptr;
+        mlptr->endptr=wptr;
+        wptr->freq++;
+    }
+    else if(is_present_MISList(mlptr,word))
+    {
+    }
+    else{
+        lptr=ptr->next;
+        mlptr->endptr->next=wptr;
+        wptr->next=lptr;
+        mlptr->endptr=wptr;
+        wptr->freq++;
+    }
+
+}
+
+void display_mis(MIS_List*mlptr)
+{
+    wordNode*ptr=mlptr->endptr->next;
+    if(ptr!=NULL)
+    {
+        while(ptr!=mlptr->endptr)
+        {
+            printf(" %s-->%d,",ptr->data,ptr->freq);
+            ptr=ptr->next;
         }
     }
     
 }
-boolean presentInDictionary(char* word,dict_node* dictptr){
-    letter_node* wordptr = wordToList(word);
-    boolean retval=FALSE;int flag=0;
-    dict_node* ptr=dictptr;
-    while(ptr!=NULL && flag==0)
-    {
-        if(areEqual(wordptr,ptr->right)){
-            flag=1;
-            retval=TRUE;
-        }
-        else{
-            ptr=ptr->down;
-        }
-    }
-    return retval;
-}
+//Misspelled List done
+
 void readFileAndRemovePunctuation(){
     char ch, file_name[25];
     FILE *fp,*result;
@@ -201,52 +481,63 @@ void readFileAndRemovePunctuation(){
    }
 }
 
-boolean IsMisspelled(char* word,dict_node* dictptr){
-    boolean retval = TRUE;
-    if(presentInDictionary){
-        retval = FALSE;
-    }
-    return retval;
-}
-
-wordNode* insert_mis(char* word,wordNode* endptr){
-    //INSERTING AT START
-    //RETURNS THE ENDPOINTER ITSELF
-    wordNode* retval=endptr;wordNode* lptr;
-    wordNode* wptr=(wordNode*)malloc(sizeof(wordNode));
-    wptr = MakeWordNode(word);
-    if(endptr==NULL)
-    {
-        wptr->next=wptr;
-        retval = wptr;
-    }
-    else{
-        lptr = endptr->next;
-        wptr->next = lptr;
-        endptr->next=wptr;
-    }
-    return retval;
-
-}
-void readResultFile(dict_node* dictptr,wordNode* endptr){
+void readResultFile(Dictionary* dictptr,MRU*mruptr,MIS_List*mlptr){
     FILE* result;
     char ch;char word[40];
     result = fopen("result.txt","r");
     while((ch!=EOF))
     {
         
-        fscanf(result,"%s",word);//we will get individual words in word.
-        if(!presentInDictionary(word,dictptr)){
-            insert_mis(word,endptr);
+        fscanf(result,"%s",word);                   //we will get individual words in word.
+        
+        if(!(is_present(mruptr,word)))
+        {
+            if(!(presentInDictionary(word,dictptr)))
+            {
+                //printf("\nnotPresent in MRU!! misspelled!! word %s",word);
+                insert_mis(word,mlptr);
+            }
         }
+         
         ch=fgetc(result);
     }
 
 
 }
+
 int main()
 {
+    
+    Dictionary new_dict;
+    Dictionary*dict_ptr=&new_dict;
+    createDictionary(dict_ptr);
+    //MakeDictNodes(dict_ptr);
+    MRU MRU_List;
+    MRU*mruptr=&MRU_List;
+    create_MRU(mruptr);
+    MIS_List MIS_data;
+    MIS_List*mlptr=&MIS_data;
+    create_MIS_List(mlptr);
+    create_dict("Abc",dict_ptr);
+    insert_MRU(mruptr,"Abc",dict_ptr);
+    
+    create_dict("Gandhi",dict_ptr);
+    create_dict("bhi",dict_ptr);
+    create_dict("def",dict_ptr);
+    insert_MRU(mruptr,"def",dict_ptr);
+    create_dict("1948",dict_ptr);
+    create_dict("jkl",dict_ptr);
+    insert_MRU(mruptr,"Abc",dict_ptr);
+    create_dict("mno",dict_ptr);
+    create_dict("xyz",dict_ptr);
+
     readFileAndRemovePunctuation();
-    readResultFile();
+    readResultFile(dict_ptr,mruptr,mlptr);
+
+    TraverseDictionary(dict_ptr);
+    printf("\nMRU!!!\n");
+    display(mruptr);
+    printf("\nMisspelled list!!!\n");
+    display_mis(mlptr);
     return 0;
 }
