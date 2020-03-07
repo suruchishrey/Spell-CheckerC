@@ -228,9 +228,25 @@ wordNode* insert_mis(char* word,wordNode* endptr){
     return retval;
 
 }
+void readResultFile(dict_node* dictptr,wordNode* endptr){
+    FILE* result;
+    char ch;char word[40];
+    result = fopen("result.txt","r");
+    while((ch!=EOF))
+    {
+        
+        fscanf(result,"%s",word);//we will get individual words in word.
+        if(!presentInDictionary(word,dictptr)){
+            insert_mis(word,endptr);
+        }
+        ch=fgetc(result);
+    }
 
+
+}
 int main()
 {
     readFileAndRemovePunctuation();
+    readResultFile();
     return 0;
 }
