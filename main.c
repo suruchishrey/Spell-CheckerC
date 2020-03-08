@@ -106,38 +106,33 @@ void TraverseDictionary(Dictionary*dictptr)
 
 int newstrcmp(char* word1,char* word2)
 {
-    int res=0;
-    int i,len1=0,len2=0,diff;
-    int flag=1;
+    int res,flag=1;
+    int len1,len2,diff;
     len1=strlen(word1);
     len2=strlen(word2);
     if(len1==len2)
-    {
-        for(diff=0;word1[diff]!='\0';++diff)                    //to check if strings are of different case but equal
+     {   for(diff=0;word1[diff]!='\0';++diff)
         {
-            if(abs(word1[diff]-word2[diff])==32)
+            if((abs(word1[diff]-word2[diff])!=32) && (abs(word1[diff]-word2[diff])!=0))
             {
                 flag=0;
             }
         }
-        if(!flag)                                               //and if they are then Abc>abc
+        if(flag){                                 //Strings are equal but in different case
+            res=strcmp(word1,word2);
+        }
+     }
+     if(!flag){   
+        if(abs(word1[0]-word2[0])==32)             //Strings are diff but have different case in first letter so compare from second letter
         {
-            diff=strcmp(word1,word2);
-        
-                res=1*diff;
-            
+            word1++;word2++;
+            res=strcmp(word1,word2);
         }
         else
         {
              res=strcmp(word1,word2);
         }
-        
-    }
-    else 
-    {
-        diff=strcmp(word1,word2);
-        res=diff;
-    }
+     }
     return res;
 }
 
@@ -508,6 +503,7 @@ void readResultFile(Dictionary* dictptr,MRU*mruptr,MIS_List*mlptr){
 int main()
 {
     
+       
     Dictionary new_dict;
     Dictionary*dict_ptr=&new_dict;
     createDictionary(dict_ptr);
