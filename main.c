@@ -124,7 +124,7 @@ int newstrcmp(char* word1,char* word2)
         {
             diff=strcmp(word1,word2);
         
-                res=-1*diff;
+                res=1*diff;
             
         }
         else
@@ -530,7 +530,11 @@ int main()
     insert_MRU(mruptr,"Abc",dict_ptr);
     create_dict("mno",dict_ptr);
     create_dict("xyz",dict_ptr);
-
+    create_dict("Tip",dict_ptr);
+    create_dict("tip",dict_ptr);
+    create_dict("The",dict_ptr);
+    create_dict("the",dict_ptr);
+    
     readFileAndRemovePunctuation();
     readResultFile(dict_ptr,mruptr,mlptr);
 
