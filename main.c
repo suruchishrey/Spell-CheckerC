@@ -291,16 +291,27 @@ boolean is_present(MRU*mruptr,char*word)
 
 void increment(MRU*mruptr,wordNode*wptr)
 {
-    wordNode*ptr = mruptr->top;
+    wordNode*ptr = mruptr->top,*prev=NULL;
     int flag=1;
     while(ptr!=NULL && flag)
     {
-        if(newstrcmp(wptr->data,ptr->data)==0)
+        if(strcmp(wptr->data,ptr->data)==0)
         {
             ptr->freq++;
             flag=0;
         }
-        ptr=ptr->next;
+        else{
+            prev=ptr;
+            ptr=ptr->next;
+        }
+        
+    }
+    //prev contains prev element of matched word
+    if(prev!=NULL)
+    {
+        prev->next = ptr->next;
+        ptr->next=mruptr->top;
+        mruptr->top = ptr;
     }
     
 }
@@ -445,6 +456,7 @@ void insert_mis(char* word,MIS_List*mlptr){
     }
     else if(is_present_MISList(mlptr,word))
     {
+        wptr->freq++;
     }
     else{
         lptr=ptr->next;
@@ -466,6 +478,7 @@ void display_mis(MIS_List*mlptr)
             printf(" %s-->%d,",ptr->data,ptr->freq);
             ptr=ptr->next;
         }
+        printf("\n");
     }
     
 }
@@ -538,9 +551,9 @@ void readResultFile(Dictionary* dictptr,MRU*mruptr,MIS_List*mlptr){
     }
 }*/
 //Whenever a word in mru is encountered ,put the word in beginning of MRU
-void MRUhit(MRU* mruptr,char* word){
+/*void MRUhit(MRU* mruptr,char* word){
     wordNode* ptr;
-} 
+} */
 
 int main()
 {
@@ -560,6 +573,8 @@ int main()
     insert_MRU(mruptr,"Abc",dict_ptr);
     
     create_dict("Gandhi",dict_ptr);
+    create_dict("Father",dict_ptr);
+    create_dict("Nation",dict_ptr);
     create_dict("bhi",dict_ptr);
     create_dict("def",dict_ptr);
     insert_MRU(mruptr,"def",dict_ptr);
