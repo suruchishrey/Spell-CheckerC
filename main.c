@@ -492,6 +492,13 @@ void readResultFile(Dictionary* dictptr,MRU*mruptr,MIS_List*mlptr){
                 //printf("\nnotPresent in MRU!! misspelled!! word %s",word);
                 insert_mis(word,mlptr);
             }
+            else{
+                insert_MRU(mruptr,word,dictptr);
+            }
+        }
+        else{
+            //Search Mru for that word and increase freq
+            insert_MRU(mruptr,word,dictptr);
         }
          
         ch=fgetc(result);
@@ -499,6 +506,25 @@ void readResultFile(Dictionary* dictptr,MRU*mruptr,MIS_List*mlptr){
 
 
 }
+
+/*searchAndDeleteLeastFreq(MRU* mruptr)
+{
+    //Least frequency will always be the last element if we move every found element in the beginning
+    wordNode* ptr,*prev=NULL;
+    int min=__INT16_MAX__;
+    ptr=mruptr->top;
+    while(ptr!=NULL)
+    {
+        if(ptr->freq<min)
+        {
+            min
+        }
+    }
+}*/
+//Whenever a word in mru is encountered ,put the word in beginning of MRU
+void MRUhit(MRU* mruptr,char* word){
+    wordNode* ptr;
+} 
 
 int main()
 {
