@@ -305,12 +305,41 @@ void increment(MRU*mruptr,wordNode*wptr)
     
 }
 
+void DeleteLeastFreq(MRU* mruptr)
+{
+    wordNode*ptr=mruptr->top;
+    wordNode*delptr=ptr,*prev=NULL;
+    while(ptr!=NULL)
+    {
+        if(ptr->freq<delptr->freq)
+        {
+            delptr=ptr;
+        }
+            ptr=ptr->next;
+    }
+    ptr=mruptr->top;
+    
+    while(ptr!=delptr)
+    {
+        prev=ptr;
+        ptr=ptr->next;
+    }
+    if(prev==NULL)
+    {
+        mruptr->top=ptr->next;
+    }
+    else{
+        prev->next=ptr->next;
+    }
+    free(delptr);
+}
+
 void insert_MRU(MRU*mruptr,char*word,Dictionary*dict_ptr)
 {
     wordNode*wptr=MakeWordNode(word);
 
     boolean res;
-    wordNode *prev,*ptr=mruptr->top;
+    wordNode *ptr1,*ptr=mruptr->top;
 
     res=presentInDictionary(word,dict_ptr);
     
@@ -334,30 +363,17 @@ void insert_MRU(MRU*mruptr,char*word,Dictionary*dict_ptr)
             }
             else
             {
-                if(len_mru(mruptr)<=10)                         //if length of MRU is<10 and its not already present then insert the new node
+                wptr->freq=1;
+                if(len_mru(mruptr)<10)                         //if length of MRU is<10 and its not already present then insert the new node at the start
                 {
-                    
-                    prev=NULL;
-                    wptr->freq=1;
-                    while(ptr->freq>wptr->freq && ptr!=NULL)
-                    {
-                        prev=ptr;
-                        ptr=ptr->next;
-                    }
-                    if(prev!=NULL)
-                    {
-                        prev->next=wptr;
-                    }
-                    else
-                    {
-                        mruptr->top=wptr;
-                    }
-                    wptr->next=ptr;
-                    if(len_mru(mruptr)>10)
-                    {
-                        wptr->next=NULL;
-                    }   
-                        
+                    wptr->next=mruptr->top;
+                    mruptr->top=wptr;
+                }
+                else if(len_mru(mruptr)==10)
+                {
+                    DeleteLeastFreq(mruptr);
+                    wptr->next=mruptr->top;
+                    mruptr->top=wptr;
                 }
             }
             
