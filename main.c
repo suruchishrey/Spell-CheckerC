@@ -397,12 +397,14 @@ void insert_MRU(MRU*mruptr,char*word,Dictionary*dict_ptr)
 //display() is incomplete rn!!!
 void display(MRU*mruptr)
 {
+    printf("----------------------------------------------------------------------------------------------------------\n");
     wordNode*ptr=mruptr->top;
     while(ptr!=NULL)
     {
         printf(" %s-->%d ,",ptr->data,ptr->freq);
         ptr=ptr->next;
     }
+    printf("-----------------------------------------------------------------------------------------------------------\n");
 
 }
 //MRU part done
@@ -471,15 +473,18 @@ void insert_mis(char* word,MIS_List*mlptr){
 void display_mis(MIS_List*mlptr)
 {
     wordNode*ptr=mlptr->endptr->next;
+    printf("--------------------------------------------------------------------------------------------------\n");
     if(ptr!=NULL)
     {
-        while(ptr!=mlptr->endptr)
-        {
-            printf(" %s-->%d,",ptr->data,ptr->freq);
+        do{
+            printf(" %s-->%d ,",ptr->data,ptr->freq);
             ptr=ptr->next;
         }
+        while(ptr!=mlptr->endptr->next);
+        
         printf("\n");
     }
+    printf("---------------------------------------------------------------------------------------------------\n");
     
 }
 //Misspelled List done
@@ -538,6 +543,97 @@ void readResultFile(Dictionary* dictptr,MRU*mruptr,MIS_List*mlptr){
     }
 
 
+}
+
+
+
+/* Function to bubble sort the given linked list */
+void bubbleSort(wordNode *start); 
+  
+/* Function to swap data of two nodes a and b*/
+void swapfandword(wordNode *a, wordNode *b); 
+  
+/* Function to print nodes in a given linked list */
+void printList(wordNode *start); 
+  
+  
+   
+/* Function to print nodes in a given linked list */
+/*void printSortedMRU(wordNode *start) 
+{ 
+    wordNode *temp = start; 
+    printf("\n"); 
+    while (temp!=NULL) 
+    { 
+        printf("%d ", temp->freq); 
+        temp = temp->next; 
+    } 
+} */
+  
+/* Bubble sort the given linked list */
+void bubbleSort(wordNode *start) 
+{ 
+    int swapped, i; 
+    wordNode *ptr1; 
+    wordNode *lptr = NULL; 
+  
+    /* Checking for empty list */
+    if (start == NULL) 
+        return; 
+  
+    do
+    { 
+        swapped = 0; 
+        ptr1 = start; 
+  
+        while (ptr1->next != lptr) 
+        { 
+            if (ptr1->freq > ptr1->next->freq) 
+            {  
+                swapfandword(ptr1,ptr1->next);
+        
+                swapped = 1; 
+            } 
+            ptr1 = ptr1->next; 
+        } 
+        lptr = ptr1; 
+    } 
+    while (swapped); 
+} 
+  
+/* function to swap data of two nodes a and b*/
+void swapfandword(wordNode *a, wordNode *b) 
+{ 
+    int temp = a->freq; 
+    a->freq = b->freq; 
+    b->freq = temp;
+    char tempw[40];
+    strcpy(tempw,a->data);
+    strcpy(a->data,b->data);
+    strcpy(b->data,tempw);
+} 
+
+void display_MRU_Sorted(MRU mru)
+{
+    bubbleSort(mru.top);
+    display(&(mru));
+}
+
+void display_mis_Sorted(MIS_List* mis)
+{
+    wordNode* lptr=mis->endptr->next;
+    mis->endptr->next=NULL;
+    bubbleSort(lptr);
+    wordNode* ptr;
+    ptr=lptr;
+    while(ptr->next!=NULL)
+    {
+        ptr=ptr->next;
+    }
+    ptr->next=lptr;
+    mis->endptr=ptr;
+
+    display_mis(mis);
 }
 
 /*searchAndDeleteLeastFreq(MRU* mruptr)
@@ -604,10 +700,11 @@ int main()
     readFileAndRemovePunctuation();
     readResultFile(dict_ptr,mruptr,mlptr);
 
-    TraverseDictionary(dict_ptr);
+   // TraverseDictionary(dict_ptr);
     printf("\nMRU!!!\n");
     display(mruptr);
     printf("\nMisspelled list!!!\n");
     display_mis(mlptr);
-    return 0;
+    display_MRU_Sorted(*mruptr);
+    display_mis_Sorted(&MIS_data);
 }
