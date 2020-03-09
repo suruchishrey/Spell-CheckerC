@@ -498,6 +498,10 @@ void readFileAndRemovePunctuation(){
             {
                 fprintf(result,"%c", ch);
             }
+            else{
+                ch=' ';
+                fprintf(result,"%c", ch);
+            }
             
         }  
         fclose(fp);
@@ -570,9 +574,9 @@ int main()
     MIS_List*mlptr=&MIS_data;
     create_MIS_List(mlptr);
     create_dict("Abc",dict_ptr);
-    insert_MRU(mruptr,"Abc",dict_ptr);
+    //insert_MRU(mruptr,"Abc",dict_ptr);
     
-    create_dict("Gandhi",dict_ptr);
+    /*create_dict("Gandhi",dict_ptr);
     create_dict("Father",dict_ptr);
     create_dict("Nation",dict_ptr);
     create_dict("bhi",dict_ptr);
@@ -587,7 +591,16 @@ int main()
     create_dict("tip",dict_ptr);
     create_dict("The",dict_ptr);
     create_dict("the",dict_ptr);
-    
+    */
+    FILE* fp;
+    fp=fopen("engmix.txt","r");
+    char ch;
+    char word[40];
+    while((ch=fgetc(fp))!=EOF)
+    {
+        fscanf(fp,"%s",word);
+        create_dict(word,dict_ptr);
+    }
     readFileAndRemovePunctuation();
     readResultFile(dict_ptr,mruptr,mlptr);
 
