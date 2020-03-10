@@ -489,10 +489,10 @@ void display_mis(MIS_List*mlptr)
 }
 //Misspelled List done
 
-void readFileAndRemovePunctuation(){
+void readFileAndRemovePunctuation(char* fl){
     char ch, file_name[25];
     FILE *fp,*result;
-   fp = fopen("doc.txt", "r"); // read mode
+   fp = fopen(fl, "r"); // read mode
    result = fopen("result.txt","w");
    if (fp != NULL)
    {
@@ -655,10 +655,11 @@ void display_mis_Sorted(MIS_List* mis)
     wordNode* ptr;
 } */
 
-int main()
+int main(int argc,char* argv[])
 {
     
-       
+    char fl[20];
+    strcpy(fl,argv[1]);
     Dictionary new_dict;
     Dictionary*dict_ptr=&new_dict;
     createDictionary(dict_ptr);
@@ -697,7 +698,7 @@ int main()
         fscanf(fp,"%s",word);
         create_dict(word,dict_ptr);
     }
-    readFileAndRemovePunctuation();
+    readFileAndRemovePunctuation(fl);
     readResultFile(dict_ptr,mruptr,mlptr);
 
    // TraverseDictionary(dict_ptr);
