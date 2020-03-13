@@ -588,7 +588,7 @@ void bubbleSort(wordNode *start)
   
         while (ptr1->next != lptr) 
         { 
-            if (ptr1->freq > ptr1->next->freq) 
+            if (strcmp(ptr1->data,ptr1->next->data)>0) 
             {  
                 swapfandword(ptr1,ptr1->next);
         
@@ -613,10 +613,10 @@ void swapfandword(wordNode *a, wordNode *b)
     strcpy(b->data,tempw);
 } 
 
-void display_MRU_Sorted(MRU mru)
+void display_MRU_Sorted(MRU* mruptr)
 {
-    bubbleSort(mru.top);
-    display(&(mru));
+    bubbleSort(mruptr->top);
+    display(mruptr);
 }
 
 void display_mis_Sorted(MIS_List* mis)
@@ -706,6 +706,8 @@ int main(int argc,char* argv[])
     display(mruptr);
     printf("\nMisspelled list!!!\n");
     display_mis(mlptr);
-    display_MRU_Sorted(*mruptr);
+    printf("\nSorted MRU!!!\n");
+    display_MRU_Sorted(mruptr);
+    printf("\nSorted Misspelled list!!!\n");
     display_mis_Sorted(&MIS_data);
 }
